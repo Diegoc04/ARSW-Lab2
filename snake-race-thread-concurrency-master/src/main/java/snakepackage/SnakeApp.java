@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 import enums.GridSize;
 import java.awt.BorderLayout;
@@ -60,6 +61,11 @@ public class SnakeApp {
         actionsBPabel.add(new JButton("Pausar "));
         actionsBPabel.add(new JButton("Reanudar "));
         frame.add(actionsBPabel,BorderLayout.SOUTH);
+        JPanel information=new JPanel();
+        information.setLayout(new FlowLayout());
+        information.add((new JLabel("Serpiente más larga: ")));
+        information.add((new JLabel("Peor serpiente: ")));
+        frame.add(information,BorderLayout.NORTH);
 
     }
 
