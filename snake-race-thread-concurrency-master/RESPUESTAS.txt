@@ -18,8 +18,6 @@ Los recursos compartidos como el estado del juego pueden ser accedidos por múlt
 
 Condición de Carrera: Si una serpiente está tratando de actualizar la lista de alimentos al mismo tiempo que otra serpiente está buscando un alimento, esto podría llevar a inconsistencias o incluso fallas en la lógica del juego.
 
-Uso innecesario de esperas activas:
-
 Uso inadecuado de colecciones, considerando su manejo concurrente  (para esto, aumente la velocidad del juego y ejecútelo varias veces hasta que se genere un error):
 
 
@@ -52,6 +50,7 @@ Uso inadecuado de colecciones, considerando su manejo concurrente  (para esto, a
 
 Al aumentar la velocidad de las serpientes se puede observar como hay casos en los que una serpiente come y esa junto a otras crecen, esto ocurre sin una adecuada sincronización. Si una serpiente come y aumenta su tamaño, y otro hilo está procesando la lista para verificar el estado de cada serpiente, podrían ocurrir inconsistencias si no se maneja correctamente el acceso concurrente.
 
+Uso innecesario de esperas activas:
 
 Método run() en la clase Snake:
 
