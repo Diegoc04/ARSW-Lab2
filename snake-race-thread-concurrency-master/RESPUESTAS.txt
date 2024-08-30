@@ -1,0 +1,81 @@
+Posibles condiciones de carrera:
+
+1. Movimiento Concurrente de las Serpientes:
+
+Si varias serpientes se están moviéndose al mismo tiempo y comparten algún recurso como una lista de posiciones ocupadas en el tablero pueden surgir problemas si dos hilos intentan acceder y modificar el recurso simultáneamente.
+
+Condición de Carrera: Ocurre si no hay una sincronización adecuada, puede pasar si dos serpientes accedan a la misma ubicación en la memoria al mismo tiempo, esto podría causar inconsistencias en los datos sobre las posiciones ocupadas en el tablero.
+
+2. Actualización de la Pantalla:
+
+Si la pantalla del juego se actualiza en un hilo separado mientras las serpientes se están moviendo, podria ocurrir que los movimientos no se han completado antes de que la pantalla intente mostrar la nueva posición de las serpientes.
+
+Condición de Carrera: La pantalla podría mostrar una posición incorrecta de las serpientes debido a que la actualización visual no está sincronizada con el movimiento.
+
+3. Acceso Simultáneo a Recursos Compartidos:
+
+Los recursos compartidos como el estado del juego pueden ser accedidos por múltiples hilos al mismo tiempo.
+
+Condición de Carrera: Si una serpiente está tratando de actualizar la lista de alimentos al mismo tiempo que otra serpiente está buscando un alimento, esto podría llevar a inconsistencias o incluso fallas en la lógica del juego.
+
+Uso innecesario de esperas activas:
+
+Uso inadecuado de colecciones, considerando su manejo concurrente  (para esto, aumente la velocidad del juego y ejecútelo varias veces hasta que se genere un error):
+
+
+@Override
+    public void run() {
+        while (!snakeEnd) {
+            
+            snakeCalc();
+
+            //NOTIFY CHANGES TO GUI
+            setChanged();
+            notifyObservers();
+
+            try {
+                if (hasTurbo == true) {
+                    Thread.sleep(50 / 3);
+                } else {
+                    Thread.sleep(50);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+        
+        fixDirection(head);
+        
+        
+    }
+
+Al aumentar la velocidad de las serpientes se puede observar como hay casos en los que una serpiente come y esa junto a otras crecen, esto ocurre sin una adecuada sincronización. Si una serpiente come y aumenta su tamaño, y otro hilo está procesando la lista para verificar el estado de cada serpiente, podrían ocurrir inconsistencias si no se maneja correctamente el acceso concurrente.
+
+
+Método run() en la clase Snake:
+
+@Override
+public void run() {
+    while (!snakeEnd) {
+        snakeCalc();
+
+        // NOTIFY CHANGES TO GUI
+        setChanged();
+        notifyObservers();
+
+        try {
+            if (hasTurbo == true) {
+                Thread.sleep(500 / 3);
+            } else {
+                Thread.sleep(500);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    fixDirection(head);
+}
+
+La lógica de esperar un tiempo fijo (Thread.sleep) en cada iteración se podria considerar una espera innecesaria debido a que el hilo sigue "vivo" aunque no esté realizando ninguna operación útil mientras espera que transcurra el tiempo.

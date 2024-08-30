@@ -56,6 +56,9 @@ public class SnakeApp {
         JPanel actionsBPabel=new JPanel();
         actionsBPabel.setLayout(new FlowLayout());
         actionsBPabel.add(new JButton("Action "));
+        actionsBPabel.add(new JButton("Iniciar "));
+        actionsBPabel.add(new JButton("Pausar "));
+        actionsBPabel.add(new JButton("Reanudar "));
         frame.add(actionsBPabel,BorderLayout.SOUTH);
 
     }
