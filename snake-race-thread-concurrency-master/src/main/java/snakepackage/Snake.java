@@ -73,7 +73,8 @@ public class Snake extends Observable implements Runnable {
     }
 
     private void snakeCalc() {
-        head = snakeBody.peekFirst();
+        synchronized (snakeBody) {
+            head = snakeBody.peekFirst();
 
         newCell = head;
 
@@ -85,6 +86,7 @@ public class Snake extends Observable implements Runnable {
         checkIfJumpPad(newCell);
         checkIfTurboBoost(newCell);
         checkIfBarrier(newCell);
+        checkIfOwnBody(newCell);
         
         snakeBody.push(newCell);
 
@@ -95,7 +97,7 @@ public class Snake extends Observable implements Runnable {
         } else if (growing != 0) {
             growing--;
         }
-
+        }
     }
 
     private void checkIfBarrier(Cell newCell) {
