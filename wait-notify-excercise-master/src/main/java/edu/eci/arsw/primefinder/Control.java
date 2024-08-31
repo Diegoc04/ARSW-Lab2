@@ -1,9 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.eci.arsw.primefinder;
+
 import java.util.Scanner;
 
 public class Control extends Thread {
@@ -13,7 +9,7 @@ public class Control extends Thread {
     private final static int TMILISECONDS = 5000;
 
     private final int NDATA = MAXVALUE / NTHREADS;
-    private PrimeFinderThread pft[];
+    private PrimeFinderThread[] pft;
     private static final Object lock = new Object();
 
     private Control() {

@@ -20,20 +20,14 @@ class PrimeFinderThread extends Thread {
     @Override
     public void run() {
         for (int i = a; i < b; i++) {
-            synchronized (lock) {
-                // Verificar si el hilo está en pausa antes de continuar
-                while (paused) {
-                    try {
-                        lock.wait();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
+            // Verificar si el hilo está en pausa antes de continuar
+            if (paused) {
+                pauseExecution();
+            }
                 
-                if (isPrime(i)) {
-                    primes.add(i);
-                    System.out.println(i);
-                }
+            if (isPrime(i)) {
+                primes.add(i);
+                System.out.println(i);
             }
         }
     }
@@ -63,6 +57,16 @@ class PrimeFinderThread extends Thread {
         paused = false;
         synchronized (lock) {
             lock.notifyAll();
+        }
+    }
+
+    private void pauseExecution() {
+        synchronized (lock) {
+            try {
+                lock.wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }

@@ -2,116 +2,156 @@ package snakepackage;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-
 import enums.GridSize;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JLabel;
 
-/**
- * @author jd-
- *
- */
+
 public class SnakeApp {
 
     private static SnakeApp app;
     public static final int MAX_THREADS = 8;
     Snake[] snakes = new Snake[MAX_THREADS];
-    private static final Cell[] spawn = {
-        new Cell(1, (GridSize.GRID_HEIGHT / 2) / 2),
-        new Cell(GridSize.GRID_WIDTH - 2,
-        3 * (GridSize.GRID_HEIGHT / 2) / 2),
-        new Cell(3 * (GridSize.GRID_WIDTH / 2) / 2, 1),
-        new Cell((GridSize.GRID_WIDTH / 2) / 2, GridSize.GRID_HEIGHT - 2),
-        new Cell(1, 3 * (GridSize.GRID_HEIGHT / 2) / 2),
-        new Cell(GridSize.GRID_WIDTH - 2, (GridSize.GRID_HEIGHT / 2) / 2),
-        new Cell((GridSize.GRID_WIDTH / 2) / 2, 1),
-        new Cell(3 * (GridSize.GRID_WIDTH / 2) / 2,
-        GridSize.GRID_HEIGHT - 2)};
-    private JFrame frame;
-    private static Board board;
-    int nr_selected = 0;
-    Thread[] thread = new Thread[MAX_THREADS];
-
+    private static final Cell[] initialPositions = {
+            new Cell(1, (GridSize.GRID_HEIGHT / 2) / 2),
+            new Cell(GridSize.GRID_WIDTH - 2, 3 * (GridSize.GRID_HEIGHT / 2) / 2),
+            new Cell(3 * (GridSize.GRID_WIDTH / 2) / 2, 1),
+            new Cell((GridSize.GRID_WIDTH / 2) / 2, GridSize.GRID_HEIGHT - 2),
+            new Cell(1, 3 * (GridSize.GRID_HEIGHT / 2) / 2),
+            new Cell(GridSize.GRID_WIDTH - 2, (GridSize.GRID_HEIGHT / 2) / 2),
+            new Cell((GridSize.GRID_WIDTH / 2) / 2, 1),
+            new Cell(3 * (GridSize.GRID_WIDTH / 2) / 2, GridSize.GRID_HEIGHT - 2)};
+    private JFrame window;
+    private static Board gameBoard;
+    private JButton btnStart, btnPause, btnResume;
+    private JLabel lblInfo;
+    private boolean isGameStarted = false;
+    private boolean isGamePaused = false;
+    
+    private final Object pauseLock = new Object();
+    
     public SnakeApp() {
-        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-        frame = new JFrame("The Snake Race");
-        frame.setLayout(new BorderLayout());
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // frame.setSize(618, 640);
-        frame.setSize(GridSize.GRID_WIDTH * GridSize.WIDTH_BOX + 17,
-                GridSize.GRID_HEIGHT * GridSize.HEIGH_BOX + 40);
-        frame.setLocation(dimension.width / 2 - frame.getWidth() / 2,
-                dimension.height / 2 - frame.getHeight() / 2);
-        board = new Board();
-        
-        
-        frame.add(board,BorderLayout.CENTER);
-        
-        JPanel actionsBPabel=new JPanel();
-        actionsBPabel.setLayout(new FlowLayout());
-        actionsBPabel.add(new JButton("Action "));
-        actionsBPabel.add(new JButton("Iniciar "));
-        actionsBPabel.add(new JButton("Pausar "));
-        actionsBPabel.add(new JButton("Reanudar "));
-        frame.add(actionsBPabel,BorderLayout.SOUTH);
-        JPanel information=new JPanel();
-        information.setLayout(new FlowLayout());
-        information.add((new JLabel("Serpiente más larga: ")));
-        information.add((new JLabel("Peor serpiente: ")));
-        frame.add(information,BorderLayout.NORTH);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        window = new JFrame("The Snake Race");
+        window.setLayout(new BorderLayout());
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setSize(GridSize.GRID_WIDTH * GridSize.WIDTH_BOX + 17,
+                GridSize.GRID_HEIGHT * GridSize.HEIGH_BOX + 100);
+        window.setLocation(screenSize.width / 2 - window.getWidth() / 2,
+                screenSize.height / 2 - window.getHeight() / 2);
 
+        for (int i = 0; i < MAX_THREADS; i++) {
+            snakes[i] = new Snake(i + 1, initialPositions[i], i + 1);
+        }
+
+        gameBoard = new Board();
+
+        window.add(gameBoard, BorderLayout.CENTER);
+
+        JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new FlowLayout());
+
+        btnStart = new JButton("Start");
+        btnPause = new JButton("Pause");
+        btnResume = new JButton("Resume");
+
+        btnStart.addActionListener(e -> startGame());
+        btnPause.addActionListener(e -> pauseGame());
+        btnResume.addActionListener(e -> resumeGame());
+
+        controlPanel.add(btnStart);
+        controlPanel.add(btnPause);
+        controlPanel.add(btnResume);
+
+        window.add(controlPanel, BorderLayout.SOUTH);
+
+        lblInfo = new JLabel("not started");
+        window.add(lblInfo, BorderLayout.NORTH);
+
+        btnPause.setEnabled(false);
+        btnResume.setEnabled(false);
     }
 
     public static void main(String[] args) {
-        app = new SnakeApp();
-        app.init();
+       app = new SnakeApp();
+        app.window.setVisible(true);
     }
 
-    private void init() {
-        
-        
-        
-        for (int i = 0; i != MAX_THREADS; i++) {
-            
-            snakes[i] = new Snake(i + 1, spawn[i], i + 1);
-            snakes[i].addObserver(board);
-            thread[i] = new Thread(snakes[i]);
-            thread[i].start();
+    private void startGame() {
+        if (!isGameStarted) {
+            isGameStarted = true;
+            for (int i = 0; i < MAX_THREADS; i++) {
+                snakes[i].addObserver(gameBoard);
+                Thread thread = new Thread(snakes[i]);
+                thread.start();
+            }
+            btnStart.setEnabled(false);
+            btnPause.setEnabled(true);
         }
+    }
 
-        frame.setVisible(true);
-
-            
-        while (true) {
-            int x = 0;
-            for (int i = 0; i != MAX_THREADS; i++) {
-                if (snakes[i].isSnakeEnd() == true) {
-                    x++;
+    private void pauseGame() {
+        synchronized (pauseLock) {
+            if (isGameStarted && !isGamePaused) {
+                isGamePaused = true;
+                for (Snake snake : snakes) {
+                    snake.pause();
                 }
-            }
-            if (x == MAX_THREADS) {
-                break;
+                btnPause.setEnabled(false);
+                btnResume.setEnabled(true);
+                updateInfoLabel();
             }
         }
+    }
 
-
-        System.out.println("Thread (snake) status:");
-        for (int i = 0; i != MAX_THREADS; i++) {
-            System.out.println("["+i+"] :"+thread[i].getState());
+    private void resumeGame() {
+        synchronized (pauseLock) {
+            if (isGameStarted && isGamePaused) {
+                isGamePaused = false;
+                for (Snake snake : snakes) {
+                    snake.resume();
+                }
+                btnPause.setEnabled(true);
+                btnResume.setEnabled(false);
+                lblInfo.setText("Game resumed");
+                updateInfoLabel();
+            }
         }
-        
+    }
 
+    private void updateInfoLabel() {
+        Snake longestSnake = GetLongSnake();
+        String worstSnake = GetWorstSnake();
+        String info = "Longest snake: " + (longestSnake != null ? longestSnake.getIdt() + " (length: " + longestSnake.getBody().size() + ")" : "None") +
+                ", First Death snake: " + worstSnake;
+                lblInfo.setText(info);
+    }
+
+    private Snake GetLongSnake() {
+        Snake longest = null;
+        int maxLength = 0;
+        for (Snake snake : snakes) {
+            if (!snake.isSnakeEnd() && snake.getBody().size() > maxLength) {
+                longest = snake;
+                maxLength = snake.getBody().size();
+            }
+        }
+        return longest;
+    }
+
+    private String GetWorstSnake() {
+        String diedFirst = Snake.getDiedFirst();
+        if (diedFirst.equals("No")) {
+            diedFirst = "No one died";
+        }
+        return diedFirst;
     }
 
     public static SnakeApp getApp() {
         return app;
     }
-
 }

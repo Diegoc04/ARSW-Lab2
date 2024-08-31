@@ -25,3 +25,6 @@
         </plugins>
     </build>
 </project>
+
+
+java -cp target/LAB3-AREP-1.0-SNAPSHOT.jar com.miempresa.App
