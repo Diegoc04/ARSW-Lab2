@@ -10,7 +10,7 @@ public class Control extends Thread {
 
     private final int NDATA = MAXVALUE / NTHREADS;
     private PrimeFinderThread[] pft;
-    private static final Object lock = new Object();
+    public static final Object lock = new Object();
 
     private Control() {
         super();
@@ -54,11 +54,10 @@ public class Control extends Thread {
                     new Scanner(System.in).nextLine();
 
                     // Reanudar los hilos
+                    lock.notifyAll();
                     for (PrimeFinderThread thread : pft) {
                         thread.resumeThread();
                     }
-
-                    lock.notifyAll();
                 }
 
             } catch (InterruptedException e) {

@@ -7,8 +7,8 @@ class PrimeFinderThread extends Thread {
 
     int a, b;
     private List<Integer> primes;
-    private static final Object lock = new Object();
-    private volatile boolean paused;
+    private static final Object lock = Control.lock; // Usar el objeto lock compartido
+    private boolean paused;
 
     public PrimeFinderThread(int a, int b) {
         super();
@@ -21,8 +21,14 @@ class PrimeFinderThread extends Thread {
     public void run() {
         for (int i = a; i < b; i++) {
             // Verificar si el hilo está en pausa antes de continuar
-            if (paused) {
-                pauseExecution();
+            synchronized (lock) {
+                while (paused) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
                 
             if (isPrime(i)) {
@@ -50,23 +56,15 @@ class PrimeFinderThread extends Thread {
     }
 
     public void pauseThread() {
-        paused = true;
-    }
-
-    public void resumeThread() {
-        paused = false;
         synchronized (lock) {
-            lock.notifyAll();
+            paused = true;
         }
     }
 
-    private void pauseExecution() {
+    public void resumeThread() {
         synchronized (lock) {
-            try {
-                lock.wait();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            paused = false;
+            lock.notifyAll();
         }
     }
 }
