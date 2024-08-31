@@ -126,7 +126,7 @@ public class SnakeApp {
     private void updateInfoLabel() {
         Snake longestSnake = GetLongSnake();
         String worstSnake = GetWorstSnake();
-        String info = "Longest snake: " + (longestSnake != null ? longestSnake.getIdt() + " (length: " + longestSnake.getBody().size() + ")" : "None") +
+        String info = "Longest snake: " + (longestSnake != null ? longestSnake.getIdt() + " (long: " + longestSnake.getBody().size() + ")" : "None") +
                 ", First Death snake: " + worstSnake;
                 lblInfo.setText(info);
     }
